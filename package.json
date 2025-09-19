@@ -4,8 +4,6 @@
   "type": "module",
   "engines": { "node": "20.x" },
   "scripts": {
-    "dev": "vercel dev",
-    "build": "vercel build",
-    "start": "vercel deploy --prebuilt"
+    "dev": "node -e \"console.log('local dev: open index.html directly');\""
   }
 }

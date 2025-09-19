@@ -1,0 +1,12 @@
+{
+  "name": "my-vercel-hello",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "20.x" },
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vercel build",
+    "start": "vercel deploy --prebuilt"
+  },
+  "devDependencies": {}
+}

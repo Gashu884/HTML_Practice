@@ -7,6 +7,5 @@
     "dev": "vercel dev",
     "build": "vercel build",
     "start": "vercel deploy --prebuilt"
-  },
-  "devDependencies": {}
+  }
 }

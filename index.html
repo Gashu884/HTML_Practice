@@ -6,120 +6,60 @@
     <title>FastAPI レスポンスビューア</title>
     <meta name="color-scheme" content="light dark" />
     <style>
-      :root { --bg: #fff; --fg: #111; --muted:#666; --card:#f7f7f8; --border:#e5e7eb; }
+      :root { --bg:#fff; --fg:#111; --muted:#666; --card:#f7f7f8; --border:#e5e7eb; }
       @media (prefers-color-scheme: dark) {
         :root { --bg:#0b0b0c; --fg:#f5f5f5; --muted:#aaa; --card:#151517; --border:#24262a; }
       }
-      body { margin: 40px; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; }
-      h1 { font-size: 24px; margin: 0 0 20px; }
-      .card { border: 1px solid var(--border); border-radius: 16px; padding: 20px; background: var(--card); max-width: 800px; box-shadow: 0 10px 20px rgba(0,0,0,.05); }
-      .row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-      label { font-size: 12px; color: var(--muted); }
-      input[type="text"] { width: 420px; max-width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); }
-      button { padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); cursor: pointer; }
-      button:disabled { opacity: .6; cursor: not-allowed; }
-      .status { font-size: 12px; color: var(--muted); margin-top: 4px; }
-      .msg { font-size: 18px; margin: 10px 0 0; word-break: break-word; }
-      pre { margin-top: 14px; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); overflow:auto; }
-      .error { color: #c0392b; }
+      body { margin:40px; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif; }
+      h1 { font-size:24px; margin:0 0 20px; }
+      .card { border:1px solid var(--border); border-radius:16px; padding:20px; background:var(--card); max-width:800px; box-shadow:0 10px 20px rgba(0,0,0,.05); }
+      button { padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:var(--bg); color:var(--fg); cursor:pointer; }
+      button:disabled { opacity:.6; cursor:not-allowed; }
+      .status { font-size:12px; color:var(--muted); margin-top:4px; }
+      .msg { font-size:18px; margin:10px 0 0; word-break:break-word; }
+      pre { margin-top:14px; padding:12px; border-radius:12px; border:1px solid var(--border); background:var(--bg); overflow:auto; }
+      .error { color:#c0392b; }
     </style>
   </head>
   <body>
     <h1>FastAPI のレスポンス表示</h1>
     <div class="card">
-      <div class="row">
+      <div>
         <button id="fetchBtn">/api/hello から取得する</button>
         <button id="clearBtn">クリア</button>
       </div>
-      <div class="status">
-        Vercel のサーバーレス関数 <code>/api/hello</code> 経由でバックエンドにアクセスします（CORS不要）。
-      </div>
-
+      <div class="status">Vercel のサーバーレス関数 <code>/api/hello</code> 経由でバックエンドにアクセスします。</div>
       <div id="result" class="msg">（未取得）</div>
       <pre id="raw" style="display:none"></pre>
-
-      <div style="margin-top:16px">
-        <label>任意のテストURL（GET）を直接叩く（デモ・ローカル確認用）</label>
-        <div class="row">
-          <input id="directUrl" type="text" placeholder="例: https://httpbin.org/json" />
-          <button id="directBtn">直接取得</button>
-        </div>
-      </div>
     </div>
-
     <script>
       const btn = document.getElementById('fetchBtn');
       const clearBtn = document.getElementById('clearBtn');
       const result = document.getElementById('result');
       const raw = document.getElementById('raw');
-      const directUrl = document.getElementById('directUrl');
-      const directBtn = document.getElementById('directBtn');
 
-      function showJSON(data) {
-        raw.textContent = JSON.stringify(data, null, 2);
-        raw.style.display = 'block';
-      }
-      function showMessage(text, isError=false) {
-        result.innerHTML = isError ? `<span class="error">${text}</span>` : text;
-      }
+      function showJSON(data){ raw.textContent = JSON.stringify(data, null, 2); raw.style.display = 'block'; }
+      function showMessage(text, err=false){ result.innerHTML = err ? `<span class="error">${text}</span>` : text; }
 
-      async function fetchHello() {
+      async function fetchHello(){
         btn.disabled = true;
-        showMessage('読み込み中…');
-        raw.style.display = 'none';
-        raw.textContent = '';
-
-        try {
+        showMessage('読み込み中…'); raw.style.display='none'; raw.textContent='';
+        try{
           const controller = new AbortController();
-          const id = setTimeout(() => controller.abort(), 10000);
-
-          const res = await fetch('/api/hello', {
-            headers: { 'accept': 'application/json' },
-            signal: controller.signal
-          });
+          const id = setTimeout(()=>controller.abort(), 10000);
+          const res = await fetch('/api/hello', { headers:{'accept':'application/json'}, signal: controller.signal });
           clearTimeout(id);
-
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          if(!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
           showMessage(data?.message ?? '(message フィールドなし)');
           showJSON(data);
-        } catch (e) {
+        }catch(e){
           showMessage(`取得に失敗しました: ${e.message ?? e}`, true);
-        } finally {
-          btn.disabled = false;
-        }
-      }
-
-      async function fetchDirect() {
-        const url = (directUrl.value || '').trim();
-        if (!url) { showMessage('URLを入力してください', true); return; }
-        directBtn.disabled = true;
-        showMessage('直接取得中…');
-        raw.style.display = 'none';
-        raw.textContent = '';
-        try {
-          const controller = new AbortController();
-          const id = setTimeout(() => controller.abort(), 10000);
-          const res = await fetch(url, { headers: { 'accept':'application/json' }, signal: controller.signal });
-          clearTimeout(id);
-          const ct = res.headers.get('content-type') || '';
-          const data = ct.includes('application/json') ? await res.json() : await res.text();
-          showMessage('直接取得の結果（下に詳細表示）');
-          showJSON(data);
-        } catch (e) {
-          showMessage(`直接取得に失敗: ${e.message ?? e}`, true);
-        } finally {
-          directBtn.disabled = false;
-        }
+        }finally{ btn.disabled = false; }
       }
 
       btn.addEventListener('click', fetchHello);
-      directBtn.addEventListener('click', fetchDirect);
-      clearBtn.addEventListener('click', () => {
-        showMessage('（未取得）');
-        raw.style.display = 'none';
-        raw.textContent = '';
-      });
+      clearBtn.addEventListener('click', ()=>{ showMessage('（未取得）'); raw.style.display='none'; raw.textContent=''; });
     </script>
   </body>
 </html>

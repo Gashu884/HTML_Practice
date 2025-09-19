@@ -1,7 +1,4 @@
 {
-  "functions": {
-    "api/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true
 }
